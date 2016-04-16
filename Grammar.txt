@@ -1,0 +1,38 @@
+prog -> _{_body_}_
+
+body -> com; { com;}
+
+com -> id = expr | if (expr) then (_{_body_}_) [else (_{_body_}_] |
+				   while (expr) do (_{_body_}_) |
+				   lire id |
+				   ecrire expr
+
+expr -> sum [== | < | > | <= | >= | !=] sum | sum
+
+sum -> prod {[+ | - | ||] prod}
+
+prod -> oprnd {[* | / | &&] oprnd}
+
+oprnd -> id | num | !oprnd | (expr)
+
+id -> char | id_char | id_digit
+
+num -> digit | num_digit
+
+char -> a | b | ... | z | A | B | ... |Z
+
+digit -> 0 | 1 | ... | 9 | "."
+
+_____________________________________________________
+
+prog  ==  P
+body  ==  B
+com   ==  S
+expr  ==  E
+sum   ==  E1
+prod  ==  T
+oprnd ==  F
+id    ==  I
+num   ==  N
+char  ==  C
+digit ==  R
