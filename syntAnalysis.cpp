@@ -47,7 +47,8 @@ void Synt_analyzer::com ()
 	if (curr_lex.table == kw && curr_lex.num == IF)	//Command is of (if_then_else) type
 	{
 		next_lex();
-		expr();						//Analyzing condition
+		expr();	
+                //Analyzing condition
 		l_false = poliz.get_pos();	//saving position for do_else label
 		poliz.put_space();			//allocating place in POLIZ for do_else label
 		poliz.put_lex (Lexeme (op, GOTO_ON_FALSE));
@@ -131,6 +132,7 @@ void Synt_analyzer::com ()
 				////and end with "}"
 				if (curr_lex.table != op || curr_lex.num != CLOSE_BRACE)
 				{
+					cout << curr_lex.table << " " << curr_lex.num << endl;
 					throw "Sign } expected at the end of WHILE";
 				}
 				next_lex();		//getting first lexeme after "{"
@@ -187,12 +189,16 @@ void Synt_analyzer::com ()
 		}
 		else
 		{
-			throw "Sign == expected";
+			throw "Sign = expected";
 		}
 	}	//<assign> processed
 	else if (curr_lex.table != op || curr_lex.num != CLOSE_BRACE)
 	{
 		throw "Unexpected lexeme in the beginning of a command";
+	}
+	if ((curr_lex.table != op) && (curr_lex.num != SEMICOLON || curr_lex.num != CLOSE_BRACE))
+	{
+		throw "Sign ; expected at the end of command";
 	}
 }
 

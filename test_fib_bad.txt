@@ -1,7 +1,7 @@
 {
 	i = 0;
 	j = 2;
-	pr_num = 1;
+	prnum = 1;
 	num = 1;
 	buf = 1;
 	lire i;
@@ -14,8 +14,8 @@
 		while (j < i) 		# do missed
 		{
 			buf = num;
-			num = num + pr_num;
-			pr_num = buf;
+			num = num + prnum;
+			prnum = buf;
 			j = j @ 1;		# unknown operation
 		};
 		ecrire num;
