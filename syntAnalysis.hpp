@@ -1,3 +1,9 @@
+#ifndef _SALIB_H_
+#define _SALIB_H_
+
+#include "POLIZ.hpp"
+#include "LexAnalysis.hpp"
+
 class Synt_analyzer
 {
 	/*
@@ -29,6 +35,8 @@ class Synt_analyzer
 public:
 
 	POLIZ poliz;
-	Synt_analyzer (const char* program) : lan(), poliz (1000);
+	void TryGetLexemes (FILE* fs);
 	void process ();
 };
+
+#endif

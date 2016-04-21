@@ -1,8 +1,6 @@
-#include <iostream>
 #include <string.h>
 #include <ctype.h>
-#include <vector>
-#include "getlex.hpp"
+#include "LexAnalysis.hpp"
 
 using namespace std;
 
@@ -53,10 +51,10 @@ ostream& operator<< (ostream &out, const Identifier &id)
 }
 
 
-const char *const Interpreter::Operators[] = {"==", "!=", "&&", "||", "+", "-", "*", "/", "=", "(", ")", "{", "}", ";", "<", ">", "<=", ">="};
-const char *const Interpreter::KeyWords[] = {"for", "while", "if", "else", "print", "get"};
+const char *const Lexic_analyzer::Operators[] = {"==", "!=", "&&", "||", "!", "+", "-", "*", "/", "=", "(", ")", "{", "}", ";", "<", ">", "<=", ">="};
+const char *const Lexic_analyzer::KeyWords[] = {"while", "do", "if", "then", "else", "lire", "ecrire"};
 
-char* Interpreter::GetOperator(char *s, int &num)
+char* Lexic_analyzer::GetOperator(char *s, int &num)
 {
   static int size = sizeof(Operators)/sizeof(char *);
   
@@ -83,7 +81,7 @@ char* Interpreter::GetOperator(char *s, int &num)
   return result;
 }
 
-bool Interpreter::TryGetNum(const char *s, double &d)
+bool Lexic_analyzer::TryGetNum(const char *s, double &d)
 {
   if (!s || !s[0]) return false;
 
@@ -107,7 +105,7 @@ bool Interpreter::TryGetNum(const char *s, double &d)
   return true;
 }
 
-int Interpreter::GetKWNum (const char *s)
+int Lexic_analyzer::GetKWNum (const char *s)
 {
   static int size = sizeof(KeyWords)/sizeof(char *);
 
@@ -118,7 +116,7 @@ int Interpreter::GetKWNum (const char *s)
   return -1; 
 }
 
-bool Interpreter::IsIdentifier (const char *s)
+bool Lexic_analyzer::IsIdentifier (const char *s)
 {
   if (!s || !s[0]) return false;
 
@@ -130,7 +128,7 @@ bool Interpreter::IsIdentifier (const char *s)
   return true;
 }
 
-void Interpreter::TryProcess (const char *s)
+void Lexic_analyzer::TryProcess (const char *s)
 {
   const char * const IDENT_ERR = "Bad identifier";
   const char * const NUM_ERR = "Bad number";
@@ -160,7 +158,7 @@ void Interpreter::TryProcess (const char *s)
   else throw IDENT_ERR;
 }
 
-void Interpreter::GetLex (char *s)
+void Lexic_analyzer::GetLexemes (char *s)
 {
   #define SPACE_TOKENS " \n\t"
   
@@ -180,7 +178,7 @@ void Interpreter::GetLex (char *s)
 	    {
 	      *comment_start = '\0';
 	      
-	      GetLex(s);
+	      GetLexemes(s);
 	      
 	      return;
 	    }
@@ -193,12 +191,12 @@ void Interpreter::GetLex (char *s)
 	  *comma_start = '\0';
 	  *comma_end = '\0';
 
-	  GetLex(s); //interprete the first part
+	  GetLexemes(s); //interprete the first part
       
 	  Strings.push_back(comma_start + 1); //add a string
 	  Lexemes.push_back( Lexeme(str, Strings.size() - 1) );
       
-	  GetLex(comma_end + 1); //interprete the last part
+	  GetLexemes(comma_end + 1); //interprete the last part
 
 	  return;
 	}
@@ -256,10 +254,10 @@ void Interpreter::GetLex (char *s)
     }
 
   //and the tail
-  GetLex(NULL);
+  GetLexemes(NULL);
 }
 
-void Interpreter::PrintLex () const
+void Lexic_analyzer::PrintLex () const
 {
   for (vector<Lexeme>::const_iterator it = Lexemes.begin(); it != Lexemes.end(); ++it) 
     {
@@ -287,8 +285,24 @@ void Interpreter::PrintLex () const
 	case num:
 	  cout << "Numbers; Value: " << Numbers[it->num];
 	  break;   
+	  
+	default:
+		break;
 	}
 
       cout << endl;
     }
+}
+
+Lexeme Lexic_analyzer::get_lex()
+{
+	static unsigned int i = 0;	//current position in Lexeme vector
+	if (i < Lexemes.size())
+	{
+		return Lexemes.at(i++);
+	}
+	else
+	{
+		throw "END_OF_FILE";
+	}
 }

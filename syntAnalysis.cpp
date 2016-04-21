@@ -1,47 +1,11 @@
-class Synt_analyzer
-{
-	/*
-	 * Syntax checking tool
-	 */ 
-	Lexeme curr_lex;
-	
-	Lexic_analyzer lan;
-	
-	//Functions for syntax analyzing.
-	void prog ();	//prog -> main () [{body}]
-	void body ();	//body -> com {; com}
-	void com ();	//com -> id = expr | if (expr) then (com) else (com) |
-					//					 while (expr) do (com) |
-				    //					 get (id) |
-				    // 					 put (id)
-	void expr ();	//expr -> sum [= | > | < | !=] sum | sum
-	void sum ();	//sum -> prod {[+ | - | ||] prod}
-	void prod ();	//prod -> oprnd {[* | / | &&] oprnd}
-	void oprnd ();	//oprnd -> id | num | !oprnd | (expr)
-	
-	//See Gammar.txt for further info
-	
-	void next_lex ()
-	{
-		curr_lex = lan.get_lex();
-	}
-	
-public:
+												//Dedicated to Kódryan
 
-	POLIZ poliz;
-	Synt_analyzer (const char* program) : lan(), poliz (1000);
-	void process ();
-};
-
-void Synt_analyzer::process ()
-{
-	next_lex();
-	prog();
-	cout << "Analyzing succeeded" << endl;
-}
+#include <stdio.h>
+#include "syntAnalysis.hpp"
 
 void Synt_analyzer::prog ()
 {
+	//Performing lexic analysis
 	//The program must start with {
 	if (curr_lex.table == op && curr_lex.num == OPEN_BRACE)
 	{
@@ -49,13 +13,14 @@ void Synt_analyzer::prog ()
 	}
 	else
 	{
-		throw curr_lex;
+		throw "Sign { expected at the begining of the program";
 	}
 	body();
 	//The program must finish with }
-	if (curr_lex.table == op && curr_lex.num != CLOSE_BRACE)	
+	if (curr_lex.table != op || curr_lex.num != CLOSE_BRACE)	
 	{
-		throw curr_lex;
+		cout << curr_lex.table << " " << curr_lex.num << endl;
+		throw "Sign } expected at the end of program";
 	}
 }
 
@@ -97,14 +62,14 @@ void Synt_analyzer::com ()
 				//and end with "}"
 				if (curr_lex.table != op || curr_lex.num != CLOSE_BRACE)
 				{
-					throw curr_lex;
+					throw "Sign } expected at the end of THEN";
 				}
 				next_lex();		//getting first lexeme after "{"
 								//if it is ";", the if_instr ends here;
 			}
 			else
 			{
-				throw curr_lex;
+				throw "Sign { expected at the begining of THEN";
 			}
 			l_true = poliz.get_pos(); //saving position for after_then label
 			poliz.put_space();		  //allocating place
@@ -122,32 +87,32 @@ void Synt_analyzer::com ()
 					//and end with "}"
 					if (curr_lex.table != op || curr_lex.num != CLOSE_BRACE)
 					{
-						throw curr_lex;
+						throw "Sign } expected at the end of ELSE";
 					}
 					next_lex();				//getting first lexeme after "}"
 					if (curr_lex.table != op || curr_lex.num != SEMICOLON)
 					{
-						throw curr_lex;
+						throw "Sign } expected at the end of THEN";
 					}
 				}
 				else
 				{
-					throw curr_lex;
+					throw "Sign { expected at the begining of ELSE";
 				}
 				//filling the place of after_then label
 				poliz.put_lex(Lexeme (POLIZ_LABEL, poliz.get_pos()), l_true);
 			}
 			else if (curr_lex.table == op || curr_lex.num != SEMICOLON)
 			{
-				throw curr_lex;
+				throw "Sign ; expected at the end of command";
 			}
 		}
 		else
 		{
-			throw curr_lex;
+			throw "THEN expected after IF";
 		}
 	}	//<if> processed. Now <curr_lex> contains <SEMICOLON>
-	else if (curr_lex.table == op && curr_lex.num == WHILE)	//Command is of (while_do) type
+	else if (curr_lex.table == kw && curr_lex.num == WHILE)	//Command is of (while_do) type
 	{
 		l_loop = poliz.get_pos();	//saving iteration point
 		next_lex();
@@ -164,31 +129,31 @@ void Synt_analyzer::com ()
 				next_lex();
 				body();
 				////and end with "}"
-				if (curr_lex.table != op || curr_lex != CLOSE_BRACE)
+				if (curr_lex.table != op || curr_lex.num != CLOSE_BRACE)
 				{
-					throw curr_lex;
+					throw "Sign } expected at the end of WHILE";
 				}
 				next_lex();		//getting first lexeme after "{"
 				if (curr_lex.table != op || curr_lex.num != SEMICOLON)	//it must be ";"
 				{
-					throw curr_lex;
+					throw "Sign ; expected at the end of command";
 				}
 			}
 			else
 			{
-				throw curr_lex;
+				throw "Sign { expected at the beginning of WHILE";
 			}
 			poliz.put_lex(Lexeme (POLIZ_LABEL, l_loop));	//next iteration
-			poliz.put_lex(Lexeme (GOTO));
+			poliz.put_lex(Lexeme (op, GOTO));
 			//filling the place of loop_end label
 			poliz.put_lex(Lexeme (POLIZ_LABEL, poliz.get_pos()), l_end);
 		}
 		else
 		{
-			throw curr_lex;
+			throw "DO expected after WHILE";
 		}
 	}	//<while> processed. Now <curr_lex> contains <SEMICOLON>
-	else if (curr_lex.table == op && curr_lex.num == LIRE)	//Command is (lire id)
+	else if (curr_lex.table == kw && curr_lex.num == LIRE)	//Command is (lire id)
 	{
 		next_lex();
 		if (curr_lex.table == id)
@@ -201,10 +166,10 @@ void Synt_analyzer::com ()
 		}
 		else
 		{
-			throw curr_lex;
+			throw "Identifier must follow LIRE";
 		}
 	}	//<lire> processed
-	else if (curr_lex.table == op && curr_lex.num == ECRIRE)	//Command is (ecrire expr)
+	else if (curr_lex.table == kw && curr_lex.num == ECRIRE)	//Command is (ecrire expr)
 	{
 		next_lex();
 		expr();
@@ -222,9 +187,13 @@ void Synt_analyzer::com ()
 		}
 		else
 		{
-			throw curr_lex;
+			throw "Sign == expected";
 		}
 	}	//<assign> processed
+	else
+	{
+		throw "Unexpected lexeme in the beginning of a command";
+	}
 }
 
 void Synt_analyzer::expr()
@@ -269,7 +238,7 @@ void Synt_analyzer::prod()
 void Synt_analyzer::oprnd()
 {
 	if (curr_lex.table == id  ||
-		curr_lex.table == num ||)
+		curr_lex.table == num)
 	{
 		poliz.put_lex(curr_lex);
 		next_lex();
@@ -289,11 +258,41 @@ void Synt_analyzer::oprnd()
 		}
 		else
 		{
-			throw curr_lex;
+			throw "Unpaired brackets";
 		}
 	}
 	else
 	{
-		throw curr_lex;
+		throw "Unexpected operand";
+	}
+}
+
+void Synt_analyzer::TryGetLexemes (FILE* fs)
+{
+	char s [256];
+	
+	while ( fgets(s, sizeof(s), fs) )
+    {
+      try
+		{
+			lan.GetLexemes(s);
+		}
+      catch (const char *s)
+		{
+			throw;
+		}
+    }
+}
+
+void Synt_analyzer::process()
+{
+	try 
+	{
+		next_lex();
+		prog();
+	}
+	catch (const char *s)
+	{
+		cerr << "OH NO MY GOD ERROR OCCURED: " << s << endl;
 	}
 }

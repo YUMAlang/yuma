@@ -1,11 +1,17 @@
-getlex.o: getlex.cpp getlex.hpp
-	g++ -g -Wall -c getlex.cpp -o getlex.o
+LexAnalysis.o: LexAnalysis.cpp LexAnalysis.hpp
+	g++ -g -Wall -c LexAnalysis.cpp -o LexAnalysis.o
 
-program: program.cpp getlex.o
-	g++ -g -Wall program.cpp getlex.o -o program
+POLIZ.o: POLIZ.cpp POLIZ.hpp
+	g++ -g -Wall -c POLIZ.cpp -o POLIZ.o
+
+syntAnalysis.o: syntAnalysis.cpp syntAnalysis.hpp
+	g++ -g -Wall -c syntAnalysis.cpp -o syntAnalysis.o
+
+program: program.cpp POLIZ.o LexAnalysis.o syntAnalysis.o 
+	g++ -g -Wall program.cpp POLIZ.o LexAnalysis.o syntAnalysis.o -o program
 
 clear: 
 	rm *.o; rm program
 
 save: 
-	(cat getlex.hpp ; cat getlex.cpp ; cat program.cpp) > saving
+	(cat LexAnalysis.hpp ; cat LexAnalysis.cpp ; cat program.cpp) > saving

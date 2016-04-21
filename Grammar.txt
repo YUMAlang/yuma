@@ -2,8 +2,8 @@ prog -> _{_body_}_
 
 body -> com; { com;}
 
-com -> id = expr | if (expr) then (_{_body_}_) [else (_{_body_}_] |
-				   while (expr) do (_{_body_}_) |
+com -> id = expr | if (expr) then (_{_body_}_) [else _{_body_}_]|
+				   while (expr) do (_{_body_}_;) |
 				   lire id |
 				   ecrire expr
 

@@ -1,5 +1,5 @@
-#ifndef _GLLIB_H_
-#define _GLLIB_H_
+#ifndef _LALIB_H_
+#define _LALIB_H_
 
 #include <vector>
 #include <iostream>
@@ -14,9 +14,21 @@ using namespace std;
     2 - Identifiers
     3 - Strings
     4 - Numbers
+    5 - POLIZ_LABEL -- just an imaginary table
 */
-enum Table { op, kw, id, str, num };
+enum Table { op, kw, id, str, num, POLIZ_LABEL};
 
+enum Numbers_in_Op
+{
+	EQU, NOT_EQU, LOGIC_AND, LOGIC_OR, LOGIC_NOT, PLUS, MINUS, MULT, DIV,
+	ASSIGN, OPEN_BRACKET, CLOSE_BRACKET, OPEN_BRACE, CLOSE_BRACE,
+	SEMICOLON, LESS, GRTR, LS_EQU, GR_EQU, GOTO, GOTO_ON_FALSE
+};
+
+enum Numbers_in_KW
+{
+	WHILE, DO, IF, THEN, ELSE, LIRE, ECRIRE
+};
 
 //Available types
 enum Type { undef_type, number_type, string_type };
@@ -28,6 +40,7 @@ struct Lexeme
   Table table;
   int num;
   Lexeme (Table t, int n): table(t), num(n) {}
+  Lexeme () {} //Antonov constructor
 };
 
 
@@ -70,8 +83,8 @@ public:
 };
 
 
-//Interpreter class
-class Interpreter
+//Lexic_analyzer class
+class Lexic_analyzer
 {
   //Constant tables
   static const char *const Operators[];
@@ -104,8 +117,9 @@ public:
     In case of success fills the vector with lexemes.
     In case of failure throws an exception (const char *).
   */
-  void GetLex (char *s);
-
+  void GetLexemes (char *s);
+  Lexeme get_lex ();
+  
   //Print the Lexemes table
   void PrintLex () const;
 };

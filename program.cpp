@@ -1,6 +1,6 @@
 #include <iostream>
 #include <stdio.h>
-#include "getlex.hpp"
+#include "syntAnalysis.hpp"
 
 using namespace std;
 
@@ -17,22 +17,20 @@ int main (int argc, char **argv)
     }
   else return 1;
   
-  char s [256];
-  Interpreter i;
+  Synt_analyzer i;
   
-  while ( fgets(s, sizeof(s), fs) )
-    {
-      try
-	{
-	  i.GetLex(s);
-	}
-      catch (const char *s)
+  try
+  {
+	i.TryGetLexemes(fs);
+  }
+  catch (const char *s)
 	{
 	  cerr << "Oops: " << s << endl;
 	  return 1;
 	}
-    }
-
-  i.PrintLex();
+	i.process();
+	
+  cout << "Wow! It really works!" << endl;
+  
   return 0;
 }
