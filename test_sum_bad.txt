@@ -1,0 +1,13 @@
+{
+	i = 0;
+	j = 1;
+	sum = 0;
+	lire i;
+	while (j <= i) do
+	{
+		sum = sum + j	# ; missed
+		j = j + 1;
+	}					# ; missed
+	ecrire sum;
+	abracadabra this!	# bad com structure
+}

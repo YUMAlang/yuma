@@ -1,0 +1,12 @@
+{
+	i = 0;
+	lire i;
+	j == 0;				# bad command structure
+	while (j <= i) do
+	{
+		if j / 2 == 0 then	# brackets missed
+		{
+			ecrire j;
+		};
+	};
+}

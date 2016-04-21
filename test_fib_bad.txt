@@ -1,22 +1,23 @@
 {
 	i = 0;
-	pr_num = 1;
 	j = 2;
+	pr_num = 1;
 	num = 1;
-	buf = 1
+	buf = 1;
 	lire i;
-	if (i == 1 || i == 2) then
+	if (i == 1 || i == 2)	# then missed
 	{
 		ecrire 1;
 	}
 	else
 	{
-		while (j < i) do
+		while (j < i) 		# do missed
 		{
 			buf = num;
 			num = num + pr_num;
 			pr_num = buf;
+			j = j @ 1;		# unknown operation
 		};
 		ecrire num;
 	};
-}
+							# } missed

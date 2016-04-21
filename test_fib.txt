@@ -1,11 +1,11 @@
 {
 	i = 0;
-	pr_num = 1;
 	j = 2;
+	prnum = 1;
 	num = 1;
-	buf = 1
+	buf = 1;
 	lire i;
-	if (i == 1 || i == 2) then
+	if ((i == 1) || (i == 2)) then
 	{
 		ecrire 1;
 	}
@@ -14,8 +14,9 @@
 		while (j < i) do
 		{
 			buf = num;
-			num = num + pr_num;
-			pr_num = buf;
+			num = num + prnum;
+			prnum = buf;
+			j = j + 1;
 		};
 		ecrire num;
 	};

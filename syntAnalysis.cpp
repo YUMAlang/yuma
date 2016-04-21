@@ -102,7 +102,7 @@ void Synt_analyzer::com ()
 				//filling the place of after_then label
 				poliz.put_lex(Lexeme (POLIZ_LABEL, poliz.get_pos()), l_true);
 			}
-			else if (curr_lex.table == op || curr_lex.num != SEMICOLON)
+			else if (curr_lex.table != op || curr_lex.num != SEMICOLON)
 			{
 				throw "Sign ; expected at the end of command";
 			}
@@ -190,7 +190,7 @@ void Synt_analyzer::com ()
 			throw "Sign == expected";
 		}
 	}	//<assign> processed
-	else
+	else if (curr_lex.table != op || curr_lex.num != CLOSE_BRACE)
 	{
 		throw "Unexpected lexeme in the beginning of a command";
 	}

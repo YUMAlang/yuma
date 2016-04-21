@@ -160,7 +160,7 @@ void Lexic_analyzer::TryProcess (const char *s)
 
 void Lexic_analyzer::GetLexemes (char *s)
 {
-  #define SPACE_TOKENS " \n\t"
+  #define SPACE_TOKENS " \n\t\r"
   
   const char * const COMMA_ERR = "Not paired commas";
   

@@ -1,0 +1,6 @@
+{
+	i = 0;
+	lire i;
+	i = i * i;
+	ecrire i;
+}

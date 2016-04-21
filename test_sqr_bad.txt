@@ -1,0 +1,6 @@
+				# { missed
+	i = 0;
+	lire i;
+	i = i * i;
+	icrir i;	# bad command structure
+}
