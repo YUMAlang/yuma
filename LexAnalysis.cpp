@@ -1,5 +1,6 @@
 #include <string.h>
 #include <ctype.h>
+#include <algorithm>
 #include "LexAnalysis.hpp"
 
 using namespace std;
@@ -126,6 +127,22 @@ bool Lexic_analyzer::IsIdentifier (const char *s)
     if ( !(isalnum(s[i]) || s[i] == '_') ) return false;
 
   return true;
+}
+
+template <class T>
+void Interpreter::AddLex (vector<T> &table, const T &val, Table type)
+{
+  typename vector<T>::iterator it;
+  
+  if ((it = find(table.begin(), table.end(), val)) == table.end())
+    {
+      table.push_back(val); //add the value in the table
+      Lexemes.push_back( Lexeme(type, table.size() - 1) );
+    }
+  else
+    {
+      Lexemes.push_back( Lexeme(type, distance(table.begin(), it)) );
+    }
 }
 
 void Lexic_analyzer::TryProcess (const char *s)

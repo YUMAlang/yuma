@@ -110,14 +110,19 @@ class Lexic_analyzer
 
   //Tries to processes a word for a number, a key word or an identifier. Throws an exception in case of failure.
   void TryProcess (const char *s);
+
+  //Add a Lexeme of given type and change the table
+  template <class T>
+  void AddLex (vector<T> &table, const T &val, Table type);
+  
 public:
   /*
     This function parses a string and tries to split it into lexemes.
-
     In case of success fills the vector with lexemes.
     In case of failure throws an exception (const char *).
   */
   void GetLexemes (char *s);
+  
   Lexeme get_lex ();
   
   //Print the Lexemes table
