@@ -16,3 +16,11 @@ void POLIZ::put_lex (Lexeme lex, int forced_pos)
 	{
 		code.at(forced_pos) = lex;
 	}
+
+void POLIZ::print()
+{
+	for (int i = 0; i < code.size(); i++)
+	{
+		cout << "[" << code.at(i).table << " : " << code.at(i).num << "]";
+	}
+}

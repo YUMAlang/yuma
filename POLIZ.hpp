@@ -12,10 +12,13 @@ class POLIZ
 public:
 
 	POLIZ ();
+	
 	int get_pos () const { return position; }
 	void put_space () { position++; }
 	void put_lex (Lexeme lex);
 	void put_lex (Lexeme lex, int forced_pos);
+	
+	void print ();
 };
 
 #endif
