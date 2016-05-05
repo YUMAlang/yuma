@@ -15,8 +15,9 @@ using namespace std;
     3 - Strings
     4 - Numbers
     5 - POLIZ_LABEL -- just an imaginary table
+    6 - ASSIGN_POS
 */
-enum Table { op, kw, id, str, num, POLIZ_LABEL};
+enum Table { op, kw, id, str, num, POLIZ_LABEL, ASSIGN_POS};
 
 enum Numbers_in_Op
 {
