@@ -15,7 +15,7 @@ using namespace std;
     3 - Strings
     4 - Numbers
     5 - POLIZ_LABEL -- just an imaginary table
-    6 - ASSIGN_POS
+    6 - ASSIGN_POS -- yet another imaginary table (thanks to Anton)
 */
 enum Table { op, kw, id, str, num, POLIZ_LABEL, ASSIGN_POS};
 
@@ -32,7 +32,7 @@ enum Numbers_in_KW
 };
 
 //Available types
-enum Type { undef_type, number_type, string_type };
+enum Type { undef_type, number_type, string_type, pol_lab_type, ass_pos_type }; 
 
 
 //Lexeme structure
@@ -45,42 +45,61 @@ struct Lexeme
 };
 
 
+//Identifier's value type
+class Value
+{
+  Type type;
+  string s;
+  double n;
+  int i;
+
+public:
+  Value () : type(undef_type) {}
+
+  bool Set (const string &s);
+
+  bool Set (double n);
+
+  bool Set (int i, bool is_pol_lab);
+  
+  Type GetType () { return type; }
+  
+  bool TryGetVal (string &s);
+
+  bool TryGetVal (double &n);
+
+  bool TryGetVal (int &i);
+};
+
+
 //Identifier class
 class Identifier
-{
-  //Identifier's value type
-  union Value
-  {
-    string *s;
-    double n;
-  };
-  
-  string name;
-  Type type;  
+{ 
+  string name;  
   Value val;
   
 public:
-  //Creates a new identificator with a given name
-  Identifier (const char *n): name(n), type(undef_type){}
+  //Creates a new identifier with a given name
+  Identifier (const char *n): name(n) {}
   
-  //Sets identificator's type and value; returns false on failure 
-  bool Set (const string &s);
+  //Sets identifier's type and value; returns false on failure 
+  bool Set (const string &s) { return val.Set(s); }
 
-  //Sets identificator's type and value; returns false on failure 
-  bool Set (double n);
+  //Sets identifier's type and value; returns false on failure 
+  bool Set (double n) { return val.Set(n); }
   
   //Gets identificator's type
-  Type GetType () { return type; }
+  Type GetType () { return val.GetType(); }
   
   //Tries to get a string from the value; returns false on failure
-  bool TryGetVal (string &s);
+  bool TryGetVal (string &s) { return val.TryGetVal(s); }
 
   //Tries to get a double from the value; returns false on failure
-  bool TryGetVal (double &n);
-
-  ~Identifier () { if (type == string_type) delete val.s; }
+  bool TryGetVal (double &n) { return val.TryGetVal(n); }
   
   friend ostream& operator<< (ostream &out, const Identifier &id);
+
+  bool operator== (const Identifier &id) { return name == id.name; }
 };
 
 

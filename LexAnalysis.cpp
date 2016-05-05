@@ -5,45 +5,68 @@
 
 using namespace std;
 
-bool Identifier::Set (const string &s)
+bool Value::Set (const string &s)
 {
   if (type == undef_type || type == string_type)
     {
       type = string_type;
-      val.s = new string(s);
+      this->s = s;
       return true;
     }
   else
     return false;
 }
 
-bool Identifier::Set (double n)
+bool Value::Set (double n)
 {
   if (type == undef_type || type == number_type)
     {
       type = number_type;
-      val.n = n;
+      this->n = n;
       return true;
     }
   else
     return false;
 }
 
-bool Identifier::TryGetVal (string &s)
+bool Value::Set (int i, bool is_pol_lab)
+{
+  if (type == undef_type || type == pol_lab_type || type == ass_pos_type)
+    {
+      if ((type == pol_lab_type) != is_pol_lab) return false;
+      
+      type = is_pol_lab ? pol_lab_type : ass_pos_type;
+      this->i = i;
+      return true;
+    }
+  else
+    return false;
+}
+
+bool Value::TryGetVal (string &s)
 {
   if (type != string_type) return false;
   
-  s = *(val.s);
+  s = this->s;
   return true;
 }
 
-bool Identifier::TryGetVal (double &n)
+bool Value::TryGetVal (double &n)
 {
   if (type != number_type) return false;
   
-  n = val.n;
+  n = this->n;
   return true;
 }
+
+bool Value::TryGetVal (int &i)
+{
+  if (type != pol_lab_type || type != ass_pos_type) return false;
+
+  i = this->i;
+  return true;
+}
+
 
 ostream& operator<< (ostream &out, const Identifier &id)
 {
@@ -130,7 +153,7 @@ bool Lexic_analyzer::IsIdentifier (const char *s)
 }
 
 template <class T>
-void Interpreter::AddLex (vector<T> &table, const T &val, Table type)
+void Lexic_analyzer::AddLex (vector<T> &table, const T &val, Table type)
 {
   typename vector<T>::iterator it;
   
@@ -159,25 +182,19 @@ void Lexic_analyzer::TryProcess (const char *s)
     {
       double res;
       if (TryGetNum(s, res))
-	{
-	  Numbers.push_back(res); //add a number
-	  Lexemes.push_back( Lexeme(num, Numbers.size() - 1) );
-	}
+	  AddLex(Numbers, res, num);
       else throw NUM_ERR;
     }
   
   else if (IsIdentifier(s))
-    {
-      Identifiers.push_back( Identifier(s) ); //add an identifier
-      Lexemes.push_back( Lexeme(id, Identifiers.size() - 1) );
-    }
+      AddLex(Identifiers, Identifier (s), id);
   
   else throw IDENT_ERR;
 }
 
 void Lexic_analyzer::GetLexemes (char *s)
 {
-  #define SPACE_TOKENS " \n\t\r"
+#define SPACE_TOKENS " \n\t\r"
   
   const char * const COMMA_ERR = "Not paired commas";
   
@@ -209,10 +226,9 @@ void Lexic_analyzer::GetLexemes (char *s)
 	  *comma_end = '\0';
 
 	  GetLexemes(s); //interprete the first part
-      
-	  Strings.push_back(comma_start + 1); //add a string
-	  Lexemes.push_back( Lexeme(str, Strings.size() - 1) );
-      
+
+	  AddLex(Strings, string (comma_start + 1), str);
+	  
 	  GetLexemes(comma_end + 1); //interprete the last part
 
 	  return;
@@ -304,22 +320,22 @@ void Lexic_analyzer::PrintLex () const
 	  break;   
 	  
 	default:
-		break;
+	  break;
 	}
 
-      cout << endl;
+      cout << "; Position: " << it->num << endl;
     }
 }
 
 Lexeme Lexic_analyzer::get_lex()
 {
-	static unsigned int i = 0;	//current position in Lexeme vector
-	if (i < Lexemes.size())
-	{
-		return Lexemes.at(i++);
-	}
-	else
-	{
-		throw "END_OF_FILE";
-	}
+  static unsigned int i = 0;	//current position in Lexeme vector
+  if (i < Lexemes.size())
+    {
+      return Lexemes.at(i++);
+    }
+  else
+    {
+      throw "END_OF_FILE";
+    }
 }
