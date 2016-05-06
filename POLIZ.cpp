@@ -19,8 +19,15 @@ void POLIZ::put_lex (Lexeme lex, int forced_pos)
 
 void POLIZ::print()
 {
-	for (int i = 0; i < code.size(); i++)
+	for (unsigned int i = 0; i < code.size(); i++)
 	{
 		cout << "[" << code.at(i).table << " : " << code.at(i).num << "]";
 	}
 }
+
+void POLIZ::put_space()
+{
+	code.push_back(Lexeme (POLIZ_LABEL, 1001));
+	position++;
+}
+
