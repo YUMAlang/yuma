@@ -5,68 +5,45 @@
 
 using namespace std;
 
-bool Value::Set (const string &s)
+bool Identifier::Set (const string &s)
 {
   if (type == undef_type || type == string_type)
     {
       type = string_type;
-      this->s = s;
+      val.s = new string(s);
       return true;
     }
   else
     return false;
 }
 
-bool Value::Set (double n)
+bool Identifier::Set (double n)
 {
   if (type == undef_type || type == number_type)
     {
       type = number_type;
-      this->n = n;
+      val.n = n;
       return true;
     }
   else
     return false;
 }
 
-bool Value::Set (int i, bool is_pol_lab)
-{
-  if (type == undef_type || type == pol_lab_type || type == ass_pos_type)
-    {
-      if ((type == pol_lab_type) != is_pol_lab) return false;
-      
-      type = is_pol_lab ? pol_lab_type : ass_pos_type;
-      this->i = i;
-      return true;
-    }
-  else
-    return false;
-}
-
-bool Value::TryGetVal (string &s)
+bool Identifier::TryGetVal (string &s)
 {
   if (type != string_type) return false;
   
-  s = this->s;
+  s = *(val.s);
   return true;
 }
 
-bool Value::TryGetVal (double &n)
+bool Identifier::TryGetVal (double &n)
 {
   if (type != number_type) return false;
   
-  n = this->n;
+  n = val.n;
   return true;
 }
-
-bool Value::TryGetVal (int &i)
-{
-  if (type != pol_lab_type || type != ass_pos_type) return false;
-
-  i = this->i;
-  return true;
-}
-
 
 ostream& operator<< (ostream &out, const Identifier &id)
 {
@@ -75,8 +52,8 @@ ostream& operator<< (ostream &out, const Identifier &id)
 }
 
 
-const char *const Lexic_analyzer::Operators[] = {"==", "!=", "&&", "||", "!", "+", "-", "*", "/", "=", "(", ")", "{", "}", ";", "<", ">", "<=", ">="};
-const char *const Lexic_analyzer::KeyWords[] = {"while", "do", "if", "then", "else", "lire", "ecrire"};
+const char *const Lexic_analyzer::Operators[] = {"==", "!=", "&&", "||", "!", "+", "-", "*", "/", "=", "(", ")", "{", "}", ";", "<", ">", "<=", ">=", "goto", "goto_f", "lire", "ecrire"};
+const char *const Lexic_analyzer::KeyWords[] = {"while", "do", "if", "then", "else"};
 
 char* Lexic_analyzer::GetOperator(char *s, int &num)
 {
@@ -182,19 +159,23 @@ void Lexic_analyzer::TryProcess (const char *s)
     {
       double res;
       if (TryGetNum(s, res))
+	{
 	  AddLex(Numbers, res, num);
+	}
       else throw NUM_ERR;
     }
   
   else if (IsIdentifier(s))
-      AddLex(Identifiers, Identifier (s), id);
+    {
+      AddLex(Identifiers, Identifier(s), id);
+    }
   
   else throw IDENT_ERR;
 }
 
 void Lexic_analyzer::GetLexemes (char *s)
 {
-#define SPACE_TOKENS " \n\t\r"
+  #define SPACE_TOKENS " \n\t\r"
   
   const char * const COMMA_ERR = "Not paired commas";
   
@@ -226,9 +207,9 @@ void Lexic_analyzer::GetLexemes (char *s)
 	  *comma_end = '\0';
 
 	  GetLexemes(s); //interprete the first part
-
-	  AddLex(Strings, string (comma_start + 1), str);
-	  
+      
+	  AddLex(Strings, string(comma_start+1), str);
+      
 	  GetLexemes(comma_end + 1); //interprete the last part
 
 	  return;
@@ -320,22 +301,22 @@ void Lexic_analyzer::PrintLex () const
 	  break;   
 	  
 	default:
-	  break;
+		break;
 	}
 
-      cout << "; Position: " << it->num << endl;
+      cout << "; Number: " << it->num << endl;
     }
 }
 
 Lexeme Lexic_analyzer::get_lex()
 {
-  static unsigned int i = 0;	//current position in Lexeme vector
-  if (i < Lexemes.size())
-    {
-      return Lexemes.at(i++);
-    }
-  else
-    {
-      throw "END_OF_FILE";
-    }
+	static unsigned int i = 0;	//current position in Lexeme vector
+	if (i < Lexemes.size())
+	{
+		return Lexemes.at(i++);
+	}
+	else
+	{
+		throw "END_OF_FILE";
+	}
 }

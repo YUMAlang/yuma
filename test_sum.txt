@@ -1,12 +1,8 @@
 {
 	i = 0;
-	j = 1;
+	j = 2;
 	sum = 0;
 	lire i;
-	while (j <= i) do
-	{
-		sum = sum + j;
-		j = j + 1;
-	};
+	sum = i + j;
 	ecrire sum;
 }

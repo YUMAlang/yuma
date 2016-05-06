@@ -1,6 +1,6 @@
 #include <iostream>
 #include <stdio.h>
-#include "syntAnalysis.hpp"
+#include "Executor.hpp"
 
 using namespace std;
 
@@ -17,20 +17,19 @@ int main (int argc, char **argv)
     }
   else return 1;
   
+  Executor ex;
   Synt_analyzer i;
   
   try
   {
-	i.TryGetLexemes(fs);
+	ex.san.TryGetLexemes(fs);
+	ex.san.process();
+	ex.execute();
   }
-  catch (const char *s)
+  catch (...)
 	{
-	  cerr << "Oops: " << s << endl;
 	  return 1;
 	}
-	i.process();
-	
-  cout << "Wow! It really works!" << endl;
   
   return 0;
 }

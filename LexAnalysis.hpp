@@ -15,7 +15,7 @@ using namespace std;
     3 - Strings
     4 - Numbers
     5 - POLIZ_LABEL -- just an imaginary table
-    6 - ASSIGN_POS -- yet another imaginary table (thanks to Anton)
+    6 - ASSIGN_POS
 */
 enum Table { op, kw, id, str, num, POLIZ_LABEL, ASSIGN_POS};
 
@@ -23,16 +23,17 @@ enum Numbers_in_Op
 {
 	EQU, NOT_EQU, LOGIC_AND, LOGIC_OR, LOGIC_NOT, PLUS, MINUS, MULT, DIV,	//8
 	ASSIGN, OPEN_BRACKET, CLOSE_BRACKET, OPEN_BRACE, CLOSE_BRACE,			//13
-	SEMICOLON, LESS, GRTR, LS_EQU, GR_EQU, GOTO, GOTO_ON_FALSE
+	SEMICOLON, LESS, GRTR, LS_EQU, GR_EQU, GOTO, GOTO_ON_FALSE,				//20
+	LIRE, ECRIRE															//22
 };
 
 enum Numbers_in_KW
 {
-	WHILE, DO, IF, THEN, ELSE, LIRE, ECRIRE
+	WHILE, DO, IF, THEN, ELSE
 };
 
 //Available types
-enum Type { undef_type, number_type, string_type, pol_lab_type, ass_pos_type }; 
+enum Type { undef_type, number_type, string_type };
 
 
 //Lexeme structure
@@ -45,61 +46,44 @@ struct Lexeme
 };
 
 
-//Identifier's value type
-class Value
-{
-  Type type;
-  string s;
-  double n;
-  int i;
-
-public:
-  Value () : type(undef_type) {}
-
-  bool Set (const string &s);
-
-  bool Set (double n);
-
-  bool Set (int i, bool is_pol_lab);
-  
-  Type GetType () { return type; }
-  
-  bool TryGetVal (string &s);
-
-  bool TryGetVal (double &n);
-
-  bool TryGetVal (int &i);
-};
-
-
 //Identifier class
 class Identifier
-{ 
-  string name;  
+{
+  //Identifier's value type
+  union Value
+  {
+    string *s;
+    double n;
+  };
+  
+  string name;
+  Type type;  
   Value val;
   
 public:
-  //Creates a new identifier with a given name
-  Identifier (const char *n): name(n) {}
+  //Creates a new identificator with a given name
+  Identifier (const char *n): name(n), type(undef_type){}
   
-  //Sets identifier's type and value; returns false on failure 
-  bool Set (const string &s) { return val.Set(s); }
+  //Sets identificator's type and value; returns false on failure 
+  bool Set (const string &s);
 
-  //Sets identifier's type and value; returns false on failure 
-  bool Set (double n) { return val.Set(n); }
+  //Sets identificator's type and value; returns false on failure 
+  bool Set (double n);
   
   //Gets identificator's type
-  Type GetType () { return val.GetType(); }
+  Type GetType () { return type; }
   
   //Tries to get a string from the value; returns false on failure
-  bool TryGetVal (string &s) { return val.TryGetVal(s); }
+  bool TryGetVal (string &s);
 
   //Tries to get a double from the value; returns false on failure
-  bool TryGetVal (double &n) { return val.TryGetVal(n); }
+  bool TryGetVal (double &n);
+
+  ~Identifier () { if (type == string_type) delete val.s; }
   
   friend ostream& operator<< (ostream &out, const Identifier &id);
-
-  bool operator== (const Identifier &id) { return name == id.name; }
+  
+  bool operator == (const Identifier & id) {return name ==id.name; }
 };
 
 
@@ -110,12 +94,13 @@ class Lexic_analyzer
   static const char *const Operators[];
   static const char *const KeyWords[];
   
+public:
   //Other tables
   vector<Lexeme> Lexemes;
   vector<Identifier> Identifiers;
   vector<string> Strings;
   vector<double> Numbers;
-
+private:
   //Returns the first operator (the longest have higher priority) in a string or NULL if not found; num will get the number of it in the table
   char* GetOperator(char *s, int &num);
 

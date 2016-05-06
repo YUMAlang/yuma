@@ -155,13 +155,11 @@ void Synt_analyzer::com ()
 			throw "DO expected after WHILE";
 		}
 	}	//<while> processed. Now <curr_lex> contains <SEMICOLON>
-	else if (curr_lex.table == kw && curr_lex.num == LIRE)	//Command is (lire id)
+	else if (curr_lex.table == op && curr_lex.num == LIRE)	//Command is (lire id)
 	{
 		next_lex();
 		if (curr_lex.table == id)
 		{
-			//Here there is smth strange in <metodichka>
-			//Check it later
 			poliz.put_lex(Lexeme (ASSIGN_POS, curr_lex.num));
 			poliz.put_lex(Lexeme (op, LIRE));
 			next_lex();
@@ -171,7 +169,7 @@ void Synt_analyzer::com ()
 			throw "Identifier must follow LIRE";
 		}
 	}	//<lire> processed
-	else if (curr_lex.table == kw && curr_lex.num == ECRIRE)	//Command is (ecrire expr)
+	else if (curr_lex.table == op && curr_lex.num == ECRIRE)	//Command is (ecrire expr)
 	{
 		next_lex();
 		expr();
@@ -194,6 +192,7 @@ void Synt_analyzer::com ()
 	}	//<assign> processed
 	else if (curr_lex.table != op || curr_lex.num != CLOSE_BRACE)
 	{
+		cout << curr_lex.table << " " << curr_lex.num << endl;
 		throw "Unexpected lexeme in the beginning of a command";
 	}
 	if ((curr_lex.table != op) && (curr_lex.num != SEMICOLON || curr_lex.num != CLOSE_BRACE))
@@ -276,15 +275,18 @@ void Synt_analyzer::oprnd()
 void Synt_analyzer::TryGetLexemes (FILE* fs)
 {
 	char s [256];
+	int n = 0;
 	
 	while ( fgets(s, sizeof(s), fs) )
     {
       try
 		{
+			++n;
 			lan.GetLexemes(s);
 		}
       catch (const char *s)
 		{
+			cerr << "Oops: In string" << n << ":" << s << endl;
 			throw;
 		}
     }
@@ -300,5 +302,6 @@ void Synt_analyzer::process()
 	catch (const char *s)
 	{
 		cerr << "OH NO MY GOD ERROR OCCURED: " << s << endl;
+		throw;
 	}
 }
