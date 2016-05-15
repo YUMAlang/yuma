@@ -1,312 +1,458 @@
 #include "Executor.hpp"
 
-void Executor::get2ops(stack<double>& st, double& op1, double& op2)
-{
-	op2 = st.top();
-	st.pop();
-	op1 = st.top();
-	st.pop();
-}
-
-void Executor::get2ops(stack<string>& st, string& op1, string& op2)
-{
-	op2 = st.top();
-	st.pop();
-	op1 = st.top();
-	st.pop();
-}
-
 void Executor::execute()
 {
-	try
+    try
 	{
-		stack<double> st_num; //stack for processing number data
-		stack<string> st_str; //stack for processing string data
-		stack<int> st_assign; //stack for storing identifiers for assignment
-		type_of_stack st_type;//type of current processing stack
-		Lexeme curr_lex;
-		unsigned int i, curr_pos = 0; //position in POLIZ code
-		double n, num_op1, num_op2, num_res;
-		string s, str_op1, str_op2, str_res;
-		//cerr << san.poliz.code.size()<<endl;
-		//main cycle
-		while (curr_pos < san.poliz.code.size())
+	    Lexeme curr_lex;
+	    Value op_1;
+	    Value op_2;
+	    Value buf;
+	    double res_num;
+	    string res_str;
+	    int iter = 0;
+	    while(iter < san.poliz.size())
 		{
-			curr_lex = san.poliz.code.at(curr_pos);
-			switch (curr_lex.table)
+		    curr_lex = san.poliz.at(iter);
+		    switch(curr_lex.table)
 			{
-			case num:
-				//cerr<<"met number\n";
-				st_type = num_stack;
-				st_num.push(san.lan.Numbers.at(curr_lex.num));
-				break;
-			case str:
-				//cerr<<"met string\n";
-				st_type = str_stack;
-				st_str.push(san.lan.Strings.at(curr_lex.num));
-				break;
-			case POLIZ_LABEL:
-				//cerr<<"met poliz label\n";
-				st_type = num_stack;
-				st_num.push(curr_lex.num);
-				break;
-			case ASSIGN_POS:
-				//cerr<<"met assign pos\n";
-				st_assign.push(curr_lex.num);
-				break;
 			case id:
-				//cerr<<"met identifier\n";
-				if (san.lan.Identifiers.at(curr_lex.num).GetType() == undef_type) throw "undefined identifier";
-				if (san.lan.Identifiers.at(curr_lex.num).GetType() == number_type)
-				{
-					st_type = num_stack;
-					san.lan.Identifiers.at(curr_lex.num).TryGetVal(n); //n = value of current id
-					st_num.push(n);
-				}
-				else
-				{
-					st_type = str_stack;
-					san.lan.Identifiers.at(curr_lex.num).TryGetVal(s); 
-					st_str.push(s);
-				}
-				break;
-			case op: //got an operation
-				cerr << "OP\n";	
-				switch (curr_lex.num) //what is it?
+			    if(san.lan.get_type(curr_lex.num) == undef_type)
+				throw Exception("undefined identifier");
+			    args.push(san.lan.get_value(curr_lex.num));
+			    break;
+
+			case str:
+			    args.push(Value(san.lan.get_string(curr_lex.num)));
+			    break;
+
+			case num:
+			    args.push(Value(san.lan.get_num(curr_lex.num)));
+			    break;
+
+			case POLIZ_LABEL:
+			    args.push(Value(pol_lab_type, curr_lex.num));
+			    break;
+
+			case ASSIGN_POS:
+			    args.push(Value(ass_pos_type, curr_lex.num));
+			    break;
+
+			case op:
+
+			    switch(curr_lex.num)
 				{
 				case EQU:
-					cerr << "EQU\n";
-					if (st_type == num_stack)
-					{
-						get2ops(st_num, num_op1, num_op2);
-						st_num.push((double)(int)(num_op1 == num_op2));
-					}
-					else
-					{
-						get2ops(st_str, str_op1, str_op2);
-						st_num.push((double)(int)(str_op1 == str_op2));
-					}
-					st_type = num_stack;
-					break;
 				case NOT_EQU:
-					cerr << "NOT EQU\n";
-					if (st_type == num_stack)
+				    op_2 = args.top();
+				    args.pop();
+				    op_1 = args.top();
+				    args.pop();
+				    if(op_1.type == op_2.type)
 					{
-						get2ops(st_num, num_op1, num_op2);
-						st_num.push((double)(int)(num_op1 != num_op2));
+					    if(op_1.type == string_type)
+						{
+						    res_num = (op_1.s == op_2.s);
+						}
+					    else if(op_1.type == number_type)
+						{
+						    res_num = (op_1.n == op_2.n);
+						}
+					    else
+						{
+						    throw Exception("Bad == or != arguments");
+						}
+					    if(curr_lex.num == NOT_EQU)
+						{
+						    if(res_num == 0)
+							res_num = 1;
+						    else
+							res_num = 0;
+						}
+					    args.push(Value(res_num));
 					}
-					else
+				    else
 					{
-						get2ops(st_str, str_op1, str_op2);
-						st_num.push((double)(int)(str_op1 != str_op2));
+					    throw Exception("Types mismatch in == or !=");
 					}
-					st_type = num_stack;
-					break;
-				case LESS:
-					cerr<<"LESS\n";
-					if (st_type == num_stack)
-					{
-						get2ops(st_num, num_op1, num_op2);
-						st_num.push((double)(int)(num_op1 < num_op2));
-					}
-					else
-					{
-						get2ops(st_str, str_op1, str_op2);
-						st_num.push((double)(int)(str_op1 < str_op2));
-					}
-					st_type = num_stack;
-					break;
-				case GRTR:
-					cerr<<"GRTR\n";
-					if (st_type == num_stack)
-					{
-						get2ops(st_num, num_op1, num_op2);
-						st_num.push((double)(int)(num_op1 > num_op2));
-					}
-					else
-					{
-						get2ops(st_str, str_op1, str_op2);
-						st_num.push((double)(int)(str_op1 > str_op2));
-					}
-					st_type = num_stack;
-					break;
-				case LS_EQU:
-					cerr<<"met ls_equ\n";
-					if (st_type == num_stack)
-					{
-						get2ops(st_num, num_op1, num_op2);
-						st_num.push((double)(int)(num_op1 <= num_op2));
-					}
-					else
-					{
-						get2ops(st_str, str_op1, str_op2);
-						st_num.push((double)(int)(str_op1 <= str_op2));
-					}
-					st_type = num_stack;
-					break;
-				case GR_EQU:
-					cerr<<"GREQU";
-					if (st_type == num_stack)
-					{
-						get2ops(st_num, num_op1, num_op2);
-						st_num.push((double)(int)(num_op1 >= num_op2));
-					}
-					else
-					{
-						get2ops(st_str, str_op1, str_op2);
-						st_num.push((double)(int)(str_op1 >= str_op2));
-					}
-					st_type = num_stack;
-					break;
+				    break;
+
 				case LOGIC_AND:
-					cerr<<"AND";
-					if (st_type == num_stack)
+				    op_2 = args.top();
+				    args.pop();
+				    op_1 = args.top();
+				    args.pop();
+				    if(op_1.type == op_2.type && op_1.type == number_type)
 					{
-						get2ops(st_num, num_op1, num_op2);
-						st_num.push((double)(int)(num_op1 && num_op2));
-						st_type = num_stack;
+					    if(op_1.n != 0 && op_2.n != 0)
+						res_num = 1;
+					    else
+						res_num = 0;
+					    args.push(Value(res_num));
 					}
-					else throw "incorrect type of LOGIC_AND operands";
-					break;
+				    else
+					{
+					    throw Exception("Types mismatch in &&");
+					}
+				    break;
+
 				case LOGIC_OR:
-					cerr<<"OR";
-					if (st_type == num_stack)
+				    op_2 = args.top();
+				    args.pop();
+				    op_1 = args.top();
+				    args.pop();
+				    if(op_1.type == op_2.type && op_1.type == number_type)
 					{
-						get2ops(st_num, num_op1, num_op2);
-						st_num.push((double)(int)(num_op1 || num_op2));
-						st_type = num_stack;
+					    if(op_1.n != 0 || op_2.n != 0)
+						res_num = 1;
+					    else
+						res_num = 0;
+					    args.push(Value(res_num));
 					}
-					else throw "incorrect type of LOGIC_OR operands";
-					break;
+				    else
+					{
+					    throw Exception("Types mismatch in ||");
+					}
+				    break;
+
 				case LOGIC_NOT:
-					cerr<<"NOT";
-					if (st_type == num_stack)
+				    op_1 = args.top();
+				    args.pop();
+				    if(op_1.type == number_type)
 					{
-						num_op1 = st_num.top();
-						st_num.pop();
-						st_num.push((double)(int)(!num_op1));
-						st_type = num_stack;
+					    if(op_1.n != 0)
+						res_num = 0;
+					    else
+						res_num = 1;
+					    args.push(Value(res_num));
 					}
-					else throw "incorrect type of LOGIC_NOT operand";
-					break;
+				    else
+					{
+					    throw Exception("Types mismatch in !");
+					}
+				    break;
+
 				case PLUS:
-					cerr << "PLUS\n";
-					if (st_type == num_stack)
+				    op_2 = args.top();
+				    args.pop();
+				    op_1 = args.top();
+				    args.pop();
+				    if(op_1.type == op_2.type)
 					{
-						get2ops(st_num, num_op1, num_op2);
-						cerr << num_op1<< ' ' << num_op2 << endl;
-						st_num.push(num_op1 + num_op2);
-						st_type = num_stack;
+					    if(op_1.type == number_type)
+						{
+						    res_num = op_1.n + op_2.n;
+						    args.push(Value(res_num));
+						}
+					    else if(op_1.type == string_type)
+						{
+						    res_str = op_1.s + op_2.s;
+						    args.push(Value(res_str));
+						}
+					    else
+						{
+						    throw Exception("Bad + arguments");
+						}
 					}
-					else
+				    else
 					{
-						get2ops(st_str, str_op1, str_op2);
-						st_str.push(str_op1 + str_op2);
-						st_type = str_stack;
+					    throw Exception("Types mismatch in +");
 					}
+				    break;
+
 				case MINUS:
-					cerr<< "MINUS\n";
-					if (st_type == num_stack)
+				    op_2 = args.top();
+				    args.pop();
+				    op_1 = args.top();
+				    args.pop();
+				    if(op_1.type == op_2.type && op_1.type == number_type)
 					{
-						get2ops(st_num, num_op1, num_op2);
-						st_num.push(num_op1 - num_op2);
-						st_type = num_stack;
+					    args.push(Value(op_1.n - op_2.n));
 					}
-					else throw "incorrect type of operator - operands";
-					break;
+				    else
+					{
+					    throw Exception("Types mismatch in -");
+					}
+				    break;
+
 				case MULT:
-					cerr << "MUL\n";
-					if (st_type == num_stack)
+				    op_2 = args.top();
+				    args.pop();
+				    op_1 = args.top();
+				    args.pop();
+				    if(op_1.type == op_2.type && op_1.type == number_type)
 					{
-						get2ops(st_num, num_op1, num_op2);
-						st_num.push(num_op1 * num_op2);
-						st_type = num_stack;
+					    args.push(Value(op_1.n * op_2.n));
 					}
-					else throw "incorrect type of operator * operands";
-					break;
+				    else
+					{
+					    throw Exception("Types mismatch in *");
+					}
+				    break;
+
 				case DIV:
-					cerr << "DIV\n";
-					if (st_type == num_stack)
+				    op_2 = args.top();
+				    args.pop();
+				    op_1 = args.top();
+				    args.pop();
+				    if(op_1.type == op_2.type && op_1.type == number_type)
 					{
-						get2ops(st_num, num_op1, num_op2);
-						st_num.push(num_op1 / num_op2);
-						st_type = num_stack;
+					    args.push(Value(op_1.n / op_2.n));
 					}
-					else throw "incorrect type of operator / operands";
-					break;
-				case GOTO:
-					cerr << "GOTO\n";
-					curr_pos = st_num.top() - 1;
-					st_num.pop();
-					break;
-				case GOTO_ON_FALSE: //condition check required
-					cerr << "GOTOF\n";
-					get2ops(st_num, num_op1, num_op2);
-					if (!num_op1) curr_pos = num_op2 - 1;
-					break;
+				    else
+					{
+					    throw Exception("Types mismatch in /");
+					}
+				    break;
+
 				case ASSIGN:
-					cerr<<"met assignment\n";
-					if (st_type == num_stack)
+				    op_2 = args.top();
+				    args.pop();
+				    op_1 = args.top();
+				    args.pop();
+				    buf = san.lan.get_value(op_1.i);
+				    if(op_1.type != ass_pos_type)
 					{
-						num_op2 = st_num.top();
-						i = st_assign.top();
-						st_assign.pop();
-						if (!san.lan.Identifiers.at(i).Set(num_op2)) throw "incompatible types for assignment";
+					    throw Exception(
+					        "<internal error> expected ass_pos as 1st assignment argument");
 					}
-					else
+				    if(op_2.type == number_type)
+					buf.Set(op_2.n);
+				    else if(op_2.type == string_type)
+					buf.Set(op_2.s);
+				    else
+					throw Exception("Bad types for =");
+				    san.lan.set_value(op_1.i, buf);
+				    break;
+
+				case LESS:
+				    op_2 = args.top();
+				    args.pop();
+				    op_1 = args.top();
+				    args.pop();
+				    if(op_1.type == op_2.type)
 					{
-						str_op2 = st_str.top();
-						i = st_assign.top();
-						st_assign.pop();
-						if (!san.lan.Identifiers.at(i).Set(str_op2)) throw "incompatible types for assignment";
+					    if(op_1.type == number_type)
+						{
+						    if(op_1.n < op_2.n)
+							res_num = 1;
+						    else
+							res_num = 0;
+						    args.push(Value(res_num));
+						}
+					    else if(op_1.type == string_type)
+						{
+						    if(op_1.s < op_2.s)
+							res_num = 1;
+						    else
+							res_num = 0;
+						    args.push(Value(res_num));
+						}
+					    else
+						throw Exception("Bad < arguments");
 					}
-					break;
+				    else
+					{
+					    throw Exception("Types mismatch in <");
+					}
+				    break;
+
+				case GRTR:
+				    op_2 = args.top();
+				    args.pop();
+				    op_1 = args.top();
+				    args.pop();
+				    if(op_1.type == op_2.type)
+					{
+					    if(op_1.type == number_type)
+						{
+						    if(op_1.n > op_2.n)
+							res_num = 1;
+						    else
+							res_num = 0;
+						    args.push(Value(res_num));
+						}
+					    else if(op_1.type == string_type)
+						{
+						    if(op_1.s > op_2.s)
+							res_num = 1;
+						    else
+							res_num = 0;
+						    args.push(Value(res_num));
+						}
+					    else
+						throw Exception("Bad > arguments");
+					}
+				    else
+					{
+					    throw Exception("Types mismatch in >");
+					}
+				    break;
+
+				case LS_EQU:
+				    op_2 = args.top();
+				    args.pop();
+				    op_1 = args.top();
+				    args.pop();
+				    if(op_1.type == op_2.type)
+					{
+					    if(op_1.type == number_type)
+						{
+						    if(op_1.n <= op_2.n)
+							res_num = 1;
+						    else
+							res_num = 0;
+						    args.push(Value(res_num));
+						}
+					    else if(op_1.type == string_type)
+						{
+						    if(op_1.s <= op_2.s)
+							res_num = 1;
+						    else
+							res_num = 0;
+						    args.push(Value(res_num));
+						}
+					    else
+						throw Exception("Bad <= arguments");
+					}
+				    else
+					{
+					    throw Exception("Types mismatch in <=");
+					}
+				    break;
+
+				case GR_EQU:
+				    op_2 = args.top();
+				    args.pop();
+				    op_1 = args.top();
+				    args.pop();
+				    if(op_1.type == op_2.type)
+					{
+					    if(op_1.type == number_type)
+						{
+						    if(op_1.n >= op_2.n)
+							res_num = 1;
+						    else
+							res_num = 0;
+						    args.push(Value(res_num));
+						}
+					    else if(op_1.type == string_type)
+						{
+						    if(op_1.s >= op_2.s)
+							res_num = 1;
+						    else
+							res_num = 0;
+						    args.push(Value(res_num));
+						}
+					    else
+						throw Exception("Bad >= arguments");
+					}
+				    else
+					{
+					    throw Exception("Types mismatch in >=");
+					}
+				    break;
+
+				case GOTO:
+				    op_1 = args.top();
+				    args.pop();
+				    if(op_1.type == pol_lab_type)
+					{
+					    iter = op_1.i - 1; // One will be added later, by While loop
+					}
+				    else
+					{
+					    throw Exception("<internal error, tell Max> loop problem in goto");
+					}
+				    break;
+
+				case GOTO_ON_FALSE:
+				    op_2 = args.top();
+				    args.pop();
+				    op_1 = args.top();
+				    args.pop();
+				    if(op_1.type == number_type)
+					{
+					    if(op_2.type == pol_lab_type)
+						{
+						    if(op_1.n == 0)
+							{
+							    iter = op_2.i - 1;
+							}
+						}
+					    else
+						{
+						    throw Exception(
+						        "<internal error, tell Max> loop/if problem in goto_f");
+						}
+					}
+				    else
+					{
+					    throw Exception("Logic expression expected in if or while condition");
+					}
+				    break;
+
 				case LIRE:
-					cerr<<"met lire\n";
-					i = st_assign.top();
-					st_assign.pop();
-					if (san.lan.Identifiers.at(i).GetType() == undef_type) {cerr<<i<<endl; throw "LIRE: undefined identifier";}
-					if (san.lan.Identifiers.at(i).GetType() == number_type)
+				    op_1 = args.top();
+				    args.pop();
+				    if(op_1.type != ass_pos_type)
+					throw Exception("<internal error> expected ass_pos before LIRE");
+				    buf = san.lan.get_value(op_1.i);
+				    if(buf.type == number_type)
 					{
-						cin >> num_res;
-						san.lan.Identifiers.at(i).Set(num_res);
+					    cin >> res_num;
+					    buf.Set(res_num);
 					}
-					else
+				    else
 					{
-						cin >> str_res;
-						san.lan.Identifiers.at(i).Set(str_res);
+					    if(buf.type == string_type)
+						{
+						    cin >> res_str;
+						    buf.Set(res_str);
+						}
+					    else
+						throw Exception("Undefined identifier");
 					}
-					break;
+				    san.lan.set_value(op_1.i, buf);
+				    break;
+
 				case ECRIRE:
-					cerr << "ECRIRE\n";
-					if (st_type == num_stack)
+				    op_1 = args.top();
+				    args.pop();
+				    if(op_1.type == number_type)
 					{
-						num_op1 = st_num.top();
-						st_num.pop();
-						cout << num_op1 << endl;
+					    cout << op_1.n;
 					}
-					else
+				    else if(op_1.type == string_type)
 					{
-						str_op1 = st_str.top();
-						st_str.pop();
-						cout << str_op1 << endl;
+					    cout << op_1.s;
 					}
-					break;
-				default: throw "wtf is this operation?";
-				} //end of inner switch
-				break;
-			default: throw "wtf is this table?";
-			} //end of big switch
-			curr_pos++;
-		} //end of the main cycle
-		cout << "Execution is finished!" << endl;
+				    else
+					{
+					    throw Exception("Types mismatch in ecrire");
+					}
+				    cout << endl;
+				    break;
+
+				default:
+				    throw Exception("WTF is this operation");
+				} // inner switch ended
+			    break;
+
+			default:
+			    throw Exception("WTF is this table");
+			} // outer switch ended
+		    iter++;
+		} // main loop ended
 	}
-	catch (const char *s)
+    catch(Exception& ex)
 	{
-		cerr << s << endl;
+	    string s = "Runtime error: ";
+	    s += ex.what();
+	    throw Exception(s);
 	}
-	catch (...)
+    catch(...)
 	{
-		cerr << "unknown exclusion O_o" << endl;
+	    throw;
 	}
 }
