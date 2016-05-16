@@ -23,7 +23,7 @@ public:
 
     virtual const char* what() const throw()
     {
-	return msg.c_str();
+		return msg.c_str();
     }
 
 protected:

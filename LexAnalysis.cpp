@@ -103,9 +103,9 @@ char* Lexic_analyzer::GetOperator(char* s, int& num)
 	    if(tmp)
 		if(!result || result > tmp || (result == tmp && len < strlen(Operators[i]))) // Bad-bad check :(
 		    {
-			result = tmp;
-			num = i;
-			len = strlen(Operators[num]);
+				result = tmp;
+				num = i;
+				len = strlen(Operators[num]);
 		    }
 	}
 
@@ -123,16 +123,16 @@ bool Lexic_analyzer::TryGetNum(const char* s, double& d)
     for(int i = 0; s[i]; i++)
 	if(isdigit(s[i]))
 	    {
-		res = 10 * res + (s[i] - '0');
-		if(got_dot)
-		    frac *= 10;
+			res = 10 * res + (s[i] - '0');
+			if(got_dot)
+				frac *= 10;
 	    }
 	else if('.' == s[i])
 	    {
-		if(!got_dot)
-		    got_dot = true;
-		else
-		    return false;
+			if(!got_dot)
+				got_dot = true;
+			else
+				return false;
 	    }
 	else
 	    return false;

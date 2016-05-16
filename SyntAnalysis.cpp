@@ -92,10 +92,6 @@ void Synt_analyzer::com()
 					    throw Exception("Sign } expected at the end of ELSE");
 					}
 				    next_lex(); // getting first lexeme after "}"
-				    if(curr_lex.table != op || curr_lex.num != SEMICOLON)
-					{
-					    throw Exception("Sign } expected at the end of THEN");
-					}
 				}
 			    else
 				{
@@ -260,12 +256,12 @@ void Synt_analyzer::oprnd()
 		}
 	    else
 		{
-		    throw Exception("Unpaired brackets");
+		    throw Exception("Closing bracket expected at the end of expression");
 		}
 	}
     else
 	{
-	    throw Exception("Unexpected operand");
+	    throw Exception("Operand expected");
 	}
 }
 
