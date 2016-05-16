@@ -17,11 +17,11 @@ oprnd -> id | num | !oprnd | (expr)
 
 id -> char | id_char | id_digit
 
-num -> digit | num_digit
+num -> digit | num_digit | digit.digit
 
 char -> a | b | ... | z | A | B | ... |Z
 
-digit -> 0 | 1 | ... | 9 | "."
+digit -> 0 | 1 | ... | 9
 
 _____________________________________________________
 
