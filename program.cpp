@@ -29,7 +29,7 @@ int main(int argc, char** argv)
 	}
     catch(Exception& ex)
 	{
-	    cerr << "Please, God, NO! " << ex.what() << endl;
+	    cerr << "OH NO MY GOD ERROR OCCURED: " << ex.what() << endl;
 	    return 1;
 	}
     catch(...)
