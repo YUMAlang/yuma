@@ -228,7 +228,7 @@ void Synt_analyzer::prod()
 	{
 	    buf_lex = curr_lex;
 	    next_lex();
-	    prod();
+	    oprnd();
 	    poliz.put_lex(buf_lex);
 	}
 }
