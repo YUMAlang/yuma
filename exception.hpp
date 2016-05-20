@@ -3,32 +3,23 @@
 
 #include <iostream>
 
-class Exception : public std::exception
+class Exception: public std::exception
 {
-
 public:
-    explicit Exception(const char* message)
-        : msg(message)
-    {
-    }
+  explicit Exception(const char* message): msg(message) {}
 
-    explicit Exception(const std::string& message)
-        : msg(message)
-    {
-    }
+  explicit Exception(const std::string& message): msg(message) {}
 
-    virtual ~Exception() throw()
-    {
-    }
+  virtual ~Exception() throw () {}
 
-    virtual const char* what() const throw()
-    {
-		return msg.c_str();
-    }
+  virtual const char* what() const throw ()
+  {
+    return msg.c_str();
+  }
 
 protected:
-    // Error message
-    std::string msg;
+  // Error message
+  std::string msg;
 };
 
 #endif

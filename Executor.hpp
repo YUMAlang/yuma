@@ -8,12 +8,12 @@
 
 class Executor
 {
-    stack<Value> args;
-
+  stack<Value> args;
 public:
-    Synt_analyzer san;
+  Synt_analyzer san;
 
-    void execute();
+  void execute (const POLIZ &);
+  void execute();
 };
 
 #endif
