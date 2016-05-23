@@ -150,26 +150,6 @@ void Synt_analyzer::com(POLIZ &p)
 	}
     } //<while> processed. Now <curr_lex> contains <SEMICOLON>
   
-  else if (curr_lex.table == kw && curr_lex.num == FUNC) // Command is of (func) type: func <id> { body } 
-    {
-      next_lex();
-      
-      if (curr_lex.table != id)
-	throw Exception("Wrong <func>-command syntax: expected identifier");
-      
-      int n = curr_lex.num;
-      POLIZ buf;
-
-      p.put_lex(Lexeme(ASSIGN_POS, n));
-      p.put_lex(Lexeme(op, IS_FUNC)); //put the label to change type dynamically
-      
-      next_lex();
-      prog(buf); //get the function's poliz
-      next_lex();
-      
-      lan.set_value(n, buf); //set the identifier's poliz
-    } //<func> processed
-  
   else if(curr_lex.table == kw && curr_lex.num == LIRE_KW) // Command is (lire id)
     {
       next_lex();
@@ -271,8 +251,19 @@ void Synt_analyzer::com(POLIZ &p)
 	{
 	  p.put_lex(Lexeme(ASSIGN_POS, n));
 	  next_lex();
-	  
-	  if (curr_lex.table == kw && curr_lex.num == ARRAY)
+
+	  if (curr_lex.table == kw && curr_lex.num == FUNC) // Command is of (func) type: func { body } 
+	    {
+      	      POLIZ buf;
+      
+	      next_lex();
+	      prog(buf); //get the function's poliz
+	      next_lex();
+      
+	      p.put_lex(Lexeme(pol, lan.add_pol(buf))); //add the poliz
+	      p.put_lex(Lexeme (op, ASSIGN));
+	    } //<func> processed
+	  else if (curr_lex.table == kw && curr_lex.num == ARRAY)
 	    {
 	      p.put_lex(Lexeme (op, CREATE_ARRAY));
 	      next_lex();

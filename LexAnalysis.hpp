@@ -18,14 +18,14 @@ using namespace std;
   5 - POLIZ_LABEL -- just an imaginary table
   6 - ASSIGN_POS -- yet another imaginary table (thanks to Anton)
 */
-enum Table { op, kw, id, str, num, POLIZ_LABEL, ASSIGN_POS};
+enum Table { op, kw, id, str, num, pol, POLIZ_LABEL, ASSIGN_POS};
 
 enum Numbers_in_Op
   {
     EQU, NOT_EQU, LOGIC_AND, LOGIC_OR, LOGIC_NOT, PLUS, MINUS, MULT, DIV,	//8
     ASSIGN, OPEN_BRACKET, CLOSE_BRACKET, OPEN_BRACE, CLOSE_BRACE,			//13
     SEMICOLON, LESS, GRTR, LS_EQU, GR_EQU, COMMA, OPEN_SQ_BRACKET, CLOSE_SQ_BRACKET,   //21
-    LIRE, ECRIRE, GOTO, GOTO_ON_FALSE, RUN, CREATE_ARRAY, LIRE_ELEM, GET_ELEM, ASSIGN_ELEM, IS_FUNC
+    LIRE, ECRIRE, GOTO, GOTO_ON_FALSE, RUN, CREATE_ARRAY, LIRE_ELEM, GET_ELEM, ASSIGN_ELEM
   };
 
 enum Numbers_in_KW
@@ -74,7 +74,6 @@ struct Value
   string s;
   double n;
   int i;
-  POLIZ p;
   vector<Value> a;
 
 public:
@@ -83,15 +82,12 @@ public:
   Value (double);
   Value (const string &);
   Value (Type, int);
-  Value (const POLIZ &);
 
   bool Set (const string &s);
 
   bool Set (double n);
 
-  bool Set (int i, bool is_pol_lab);
-
-  bool Set (const POLIZ &p);
+  bool Set (Type, int);
 
   bool Set (const vector<Value> &a);
 
@@ -108,8 +104,6 @@ public:
   bool TryGetVal (double &n);
 
   bool TryGetVal (int &i);
-
-  bool TryGetVal (POLIZ &p);
 };
 
 
@@ -128,7 +122,7 @@ public:
 
   bool Set (double n) { return val.Set(n); }
 
-  bool Set (const POLIZ &p) { return val.Set(p); }
+  bool Set (Type t, int i) { return val.Set(t, i); }
 
   bool Set (const vector<Value> &a)
   {
@@ -151,9 +145,6 @@ public:
 
   //Tries to get a double from the value; returns false on failure
   bool TryGetVal (double &n) { return val.TryGetVal(n); }
-
-  //Tries to get a poliz from the value; returns false on failure
-  bool TryGetVal (POLIZ &p) { return val.TryGetVal(p); }
   
   friend ostream& operator<< (ostream &out, const Identifier &id);
 
@@ -173,6 +164,7 @@ class Lexic_analyzer
   vector<Identifier> Identifiers;
   vector<string> Strings;
   vector<double> Numbers;
+  vector<POLIZ> Polizes;
   
   //Returns the first operator (the longest have higher priority) in a string or NULL if not found; num will get the number of it in the table
   char* GetOperator(char *s, int &num);
@@ -197,8 +189,15 @@ public:
 
   string get_string (int i) { return Strings.at(i); }
   double get_num (int i) { return Numbers.at(i); }
+  POLIZ& get_pol (int p) { return Polizes.at(p); }
   Value get_value (int i) { return Identifiers.at(i).GetValue(); }
   Type get_type(int i) { return Identifiers.at(i).GetType(); }
+
+  int add_pol(POLIZ &p) //add a new poliz into the table and return int number
+  {
+    Polizes.push_back(p);
+    return Polizes.size() - 1;
+  }
   
   bool set_value (int i, const Value &val)
   {
@@ -212,18 +211,13 @@ public:
       }
     else if (val.type == func_type)
       {
-	return Identifiers.at(i).Set(val.p);
+	return Identifiers.at(i).Set(func_type, val.i);
       }
     else if (val.type == array_type)
       {
 	return Identifiers.at(i).Set(val.a);
       }
     else return false;
-  }
-
-  bool set_type (int i, Type t)
-  {
-    return Identifiers.at(i).SetType(t);
   }
   
   /*

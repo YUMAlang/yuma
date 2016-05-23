@@ -1,0 +1,6 @@
+{
+        a = func { ecrire "before"; a = func { ecrire "new one"; }; ecrire "after"; a(); ecrire "after rec"; };
+        a();
+        a();
+}
+

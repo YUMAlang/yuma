@@ -31,6 +31,10 @@ void Executor::execute(const POLIZ &p)
 	  args.push(Value(san.lan.get_num(curr_lex.num)));
 	  break;
 
+	case pol:
+	  args.push(Value(func_type, curr_lex.num));
+	  break;
+
 	case POLIZ_LABEL:
 	  args.push(Value(pol_lab_type, curr_lex.num));
 	  break;
@@ -197,6 +201,7 @@ void Executor::execute(const POLIZ &p)
 		}
 	      if (op_2.type == number_type) buf.Set(op_2.n);
 	      else if (op_2.type == string_type) buf.Set(op_2.s);
+	      else if (op_2.type == func_type) buf.Set(func_type, op_2.i);
 	      else throw Exception("Bad types for =");
 	      san.lan.set_value(op_1.i, buf);
 	      break;
@@ -398,7 +403,7 @@ void Executor::execute(const POLIZ &p)
 	      op_1 = args.top(); args.pop();
 	      if (op_1.type == func_type)
 		{
-		  execute(op_1.p);
+		  execute(san.lan.get_pol(op_1.i));
 		}
 	      else
 		{
@@ -509,12 +514,6 @@ void Executor::execute(const POLIZ &p)
 		}
 	      buf.type = array_type;
 	      san.lan.set_value(op_1.i, buf);
-	      break;
-
-	    case IS_FUNC: //change id's type to function dynamically
-	      op_1 = args.top();
-	      args.pop();
-	      san.lan.set_type(op_1.i, func_type);
 	      break;
 
 	    default:

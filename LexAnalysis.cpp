@@ -55,12 +55,6 @@ Value::Value (Type t, int i)
   this->i = i;
 }
 
-Value::Value (const POLIZ &p)
-{
-  type = func_type;
-  this->p = p;
-}
-
 bool Value::Set (const string &s)
 {
   type = string_type;
@@ -75,24 +69,11 @@ bool Value::Set (double n)
   return true;
 }
 
-bool Value::Set (int i, bool is_pol_lab)
+bool Value::Set (Type t, int i)
 {
-  if (type == undef_type || type == pol_lab_type || type == ass_pos_type)
-    {
-      if ((type == pol_lab_type) != is_pol_lab) return false;
-      
-      type = is_pol_lab ? pol_lab_type : ass_pos_type;
-      this->i = i;
-      return true;
-    }
-  else
-    return false;
-}
+  type = t;
+  this->i = i;
 
-bool Value::Set (const POLIZ &p)
-{
-  type = func_type;
-  this->p = p;
   return true;
 }
 
@@ -121,17 +102,9 @@ bool Value::TryGetVal (double &n)
 
 bool Value::TryGetVal (int &i)
 {
-  if (type != pol_lab_type || type != ass_pos_type) return false;
+  if (type != pol_lab_type || type != ass_pos_type || type != func_type) return false;
 
   i = this->i;
-  return true;
-}
-
-bool Value::TryGetVal (POLIZ &p)
-{
-  if (type != func_type) return false;
-
-  p = this->p;
   return true;
 }
 
